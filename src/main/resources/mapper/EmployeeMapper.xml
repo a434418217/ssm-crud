@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="code.mapper.EmployeeMapper">
+  <resultMap id="BaseResultMap" type="code.bean.Employee">
+    <id column="e_id" jdbcType="INTEGER" property="eId" />
+    <result column="e_name" jdbcType="VARCHAR" property="eName" />
+    <result column="e_gender" jdbcType="CHAR" property="eGender" />
+    <result column="e_email" jdbcType="VARCHAR" property="eEmail" />
+    <result column="e_did" jdbcType="INTEGER" property="eDid" />
+  </resultMap>
+    <resultMap id="BaseResultMapWithDept" type="code.bean.Employee">
+        <id column="e_id" jdbcType="INTEGER" property="eId" />
+        <result column="e_name" jdbcType="VARCHAR" property="eName" />
+        <result column="e_gender" jdbcType="CHAR" property="eGender" />
+        <result column="e_email" jdbcType="VARCHAR" property="eEmail" />
+        <result column="e_did" jdbcType="INTEGER" property="eDid" />
+        <association property="deparment" javaType="code.bean.Deparment">
+            <id column="d_id" property="dId"/>
+            <result column="d_name" property="dName"/>
+        </association>
+    </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    e_id, e_name, e_gender, e_email, e_did
+  </sql>
+    <sql id="BaseWithDept_Column_List">
+    e.e_id, e.e_name, e.e_gender, e.e_email, e.e_did , d.d_id , d.d_name
+  </sql>
+  <select id="selectByExample" parameterType="code.bean.EmployeeExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from emp
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from emp
+    where e_id = #{eId,jdbcType=INTEGER}
+  </select>
+<!--    带部门信息-->
+    <select id="selectByExampleWithDept" parameterType="code.bean.EmployeeExample" resultMap="BaseResultMapWithDept">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="BaseWithDept_Column_List" />
+        from emp e
+        left join dept d
+        on
+        e.e_did = d.d_id
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause" />
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKeyWithDept" parameterType="java.lang.Integer" resultMap="BaseResultMapWithDept">
+        select
+        <include refid="BaseWithDept_Column_List" />
+        from emp e
+        left join dept d
+        on
+        e.e_did = d.d_id
+        where e_id = #{eId,jdbcType=INTEGER}
+    </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from emp
+    where e_id = #{eId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="code.bean.EmployeeExample">
+    delete from emp
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="code.bean.Employee">
+    insert into emp (e_id, e_name, e_gender, 
+      e_email, e_did)
+    values (#{eId,jdbcType=INTEGER}, #{eName,jdbcType=VARCHAR}, #{eGender,jdbcType=CHAR}, 
+      #{eEmail,jdbcType=VARCHAR}, #{eDid,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="code.bean.Employee">
+    insert into emp
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="eId != null">
+        e_id,
+      </if>
+      <if test="eName != null">
+        e_name,
+      </if>
+      <if test="eGender != null">
+        e_gender,
+      </if>
+      <if test="eEmail != null">
+        e_email,
+      </if>
+      <if test="eDid != null">
+        e_did,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="eId != null">
+        #{eId,jdbcType=INTEGER},
+      </if>
+      <if test="eName != null">
+        #{eName,jdbcType=VARCHAR},
+      </if>
+      <if test="eGender != null">
+        #{eGender,jdbcType=CHAR},
+      </if>
+      <if test="eEmail != null">
+        #{eEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="eDid != null">
+        #{eDid,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="code.bean.EmployeeExample" resultType="java.lang.Long">
+    select count(*) from emp
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update emp
+    <set>
+      <if test="record.eId != null">
+        e_id = #{record.eId,jdbcType=INTEGER},
+      </if>
+      <if test="record.eName != null">
+        e_name = #{record.eName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.eGender != null">
+        e_gender = #{record.eGender,jdbcType=CHAR},
+      </if>
+      <if test="record.eEmail != null">
+        e_email = #{record.eEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="record.eDid != null">
+        e_did = #{record.eDid,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update emp
+    set e_id = #{record.eId,jdbcType=INTEGER},
+      e_name = #{record.eName,jdbcType=VARCHAR},
+      e_gender = #{record.eGender,jdbcType=CHAR},
+      e_email = #{record.eEmail,jdbcType=VARCHAR},
+      e_did = #{record.eDid,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="code.bean.Employee">
+    update emp
+    <set>
+      <if test="eName != null">
+        e_name = #{eName,jdbcType=VARCHAR},
+      </if>
+      <if test="eGender != null">
+        e_gender = #{eGender,jdbcType=CHAR},
+      </if>
+      <if test="eEmail != null">
+        e_email = #{eEmail,jdbcType=VARCHAR},
+      </if>
+      <if test="eDid != null">
+        e_did = #{eDid,jdbcType=INTEGER},
+      </if>
+    </set>
+    where e_id = #{eId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="code.bean.Employee">
+    update emp
+    set e_name = #{eName,jdbcType=VARCHAR},
+      e_gender = #{eGender,jdbcType=CHAR},
+      e_email = #{eEmail,jdbcType=VARCHAR},
+      e_did = #{eDid,jdbcType=INTEGER}
+    where e_id = #{eId,jdbcType=INTEGER}
+  </update>
+</mapper>
